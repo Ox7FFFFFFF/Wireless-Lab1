@@ -97,8 +97,8 @@ def read_config():
     appskey = list(bytearray.fromhex(parsed_json['appskey']))
     fCnt = parsed_json['fCnt']
     print("devaddr: ",parsed_json['devaddr'])
-    print("nwskey: ",parsed_json['nwskey'])
-    print("appskey",parsed_json['appskey'])
+    print("nwskey : ",parsed_json['nwskey'])
+    print("appskey: ",parsed_json['appskey'])
 
 # Init
 TX_TIMESTAMP = datetime.datetime.now().timestamp()
