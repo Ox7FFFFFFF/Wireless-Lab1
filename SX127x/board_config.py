@@ -47,6 +47,7 @@ class BOARD:
         :rtype : None
         """
         GPIO.setmode(GPIO.BCM)
+        GPIO.setwarnings(False)
         # LED
         GPIO.setup(BOARD.LED, GPIO.OUT)
         GPIO.output(BOARD.LED, 0)
