@@ -72,7 +72,7 @@ def binary_array_to_hex(array):
 def write_config():
     global devaddr,nwskey,appskey,fCnt
     config = {'devaddr':binary_array_to_hex(devaddr),'nwskey':binary_array_to_hex(nwskey),'appskey':binary_array_to_hex(appskey),'fCnt':fCnt}
-    data = json.dumps(config)
+    data = json.dumps(config, sort_keys = True, indent = 4, separators=(',', ': '))
     fp = open("config.json","w")
     fp.write(data)
     fp.close()
