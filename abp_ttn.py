@@ -31,7 +31,7 @@ class LoRaWANsend(LoRa):
     def on_tx_done(self):
         global TX_TIMESTAMP
         TX_TIMESTAMP = datetime.datetime.now().timestamp()
-        print("TxDone")
+        print("TxDone\n")
         self.set_mode(MODE.STDBY)
         self.clear_irq_flags(TxDone=1)
         sleep(1)
@@ -58,7 +58,10 @@ class LoRaWANsend(LoRa):
     def send(self):
         global fCnt
         lorawan = LoRaWAN.new(nwskey, appskey)
-        lorawan.create(MHDR.CONF_DATA_UP, {'devaddr': devaddr, 'fcnt': fCnt, 'data': list(map(ord, 'Python rules!')) })
+        message = "HELLO WORLD!"
+        lorawan.create(MHDR.CONF_DATA_UP, {'devaddr': devaddr, 'fcnt': fCnt, 'data': list(map(ord, message)) })
+        print("fCnt: ",fCnt)
+        print("Send Message: ",message)
         fCnt = fCnt+1
         self.write_payload(lorawan.to_raw())
         self.set_mode(MODE.TX)
@@ -98,7 +101,7 @@ def read_config():
     fCnt = parsed_json['fCnt']
     print("devaddr: ",parsed_json['devaddr'])
     print("nwskey : ",parsed_json['nwskey'])
-    print("appskey: ",parsed_json['appskey'])
+    print("appskey: ",parsed_json['appskey'],"\n")
 
 # Init
 TX_TIMESTAMP = datetime.datetime.now().timestamp()
@@ -124,7 +127,7 @@ lora.set_rx_crc(True)
 assert(lora.get_agc_auto_on() == 1)
 
 try:
-    print("Sending LoRaWAN message\n")
+    print("Sending LoRaWAN message")
     lora.start()
 except KeyboardInterrupt:
     sys.stdout.flush()
