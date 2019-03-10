@@ -4,8 +4,9 @@ from time import sleep
 from SX127x.LoRa import *
 from SX127x.LoRaArgumentParser import LoRaArgumentParser
 from SX127x.board_config import BOARD
-import LoRaWAN,json
+import LoRaWAN
 from LoRaWAN.MHDR import MHDR
+import json,datetime
 
 BOARD.setup()
 parser = LoRaArgumentParser("LoRaWAN sender")
@@ -28,6 +29,8 @@ class LoRaWANsend(LoRa):
         self.set_mode(MODE.RXSINGLE)
         
     def on_tx_done(self):
+        global TX_TIMESTAMP
+        TX_TIMESTAMP = datetime.datetime.now().timestamp()
         print("TxDone")
         self.set_mode(MODE.STDBY)
         self.clear_irq_flags(TxDone=1)
@@ -59,12 +62,20 @@ class LoRaWANsend(LoRa):
         fCnt = fCnt+1
         self.write_payload(lorawan.to_raw())
         self.set_mode(MODE.TX)
-        
+    
+    def time_checking(self):
+        global TX_TIMESTAMP
+        diff = datetime.datetime.now().timestamp()-TX_TIMESTAMP
+        if diff > 2 :
+            print("TIMEOUT!!")
+            write_config()
+            sys.exit(0)
+    
     def start(self):
+        self.send()
         while True:
-            sleep(2)
-            self.send()
-        sleep(1)
+            self.time_checking()
+            sleep(1)
 
 def binary_array_to_hex(array):
     return ''.join(format(x, '02x') for x in array)
@@ -90,6 +101,7 @@ def read_config():
     print("appskey",parsed_json['appskey'])
 
 # Init
+TX_TIMESTAMP = datetime.datetime.now().timestamp()
 fCnt = 0
 devaddr = []
 nwskey = []
@@ -103,11 +115,12 @@ lora.set_dio_mapping([1,0,0,0,0,0])
 lora.set_freq(923.4)
 lora.set_pa_config(pa_select=1)
 lora.set_spreading_factor(7)
+lora.set_bw(BW.BW125)
 lora.set_pa_config(max_power=0x0F, output_power=0x0E)
 lora.set_sync_word(0x34)
 lora.set_rx_crc(True)
 
-print(lora)
+#print(lora)
 assert(lora.get_agc_auto_on() == 1)
 
 try:
