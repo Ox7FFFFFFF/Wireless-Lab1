@@ -28,6 +28,7 @@ class LoRaWANsend(LoRa):
         self.clear_irq_flags(TxDone=1)
         self.set_mode(MODE.SLEEP)
         self.set_dio_mapping([0,0,0,0,0,0])
+        self.set_invert_iq(1)
         self.reset_ptr_rx()
         sleep(1)
         self.set_mode(MODE.RXSINGLE)
