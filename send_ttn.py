@@ -18,28 +18,20 @@ class LoRaWANsend(LoRa):
         self.nwkey = nwkey
         self.appkey = appkey
         
-    def switch_to_tx(self):
-        self.set_mode(MODE.SLEEP)
-        self.set_dio_mapping([1,0,0,0,0,0])
-        
-    def switch_to_rx(self):
-        self.set_mode(MODE.SLEEP)
-        self.set_dio_mapping([0,0,0,0,0,0])
-        self.reset_ptr_rx()
-        self.set_mode(MODE.RXSINGLE)
-        
     def on_tx_done(self):
         global TX_TIMESTAMP
         TX_TIMESTAMP = datetime.datetime.now().timestamp()
         print("TxDone\n")
         self.set_mode(MODE.STDBY)
         self.clear_irq_flags(TxDone=1)
+        self.set_mode(MODE.SLEEP)
+        self.set_dio_mapping([0,0,0,0,0,0])
+        self.reset_ptr_rx()
         sleep(1)
-        self.switch_to_rx()
+        self.set_mode(MODE.RXSINGLE)
         
     def on_rx_done(self):
         print("RxDone")
-        global LOCK
         self.clear_irq_flags(RxDone=1)
         
         #read payload
