@@ -103,6 +103,7 @@ def read_config():
     print("appskey: ",parsed_json['appskey'],"\n")
 
 # Init
+RxDone = False
 fCnt = 0
 devaddr = []
 nwskey = []
