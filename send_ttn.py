@@ -14,14 +14,8 @@ parser = LoRaArgumentParser("LoRaWAN sender")
 class LoRaWANsend(LoRa):
     def __init__(self, devaddr = [], nwkey = [], appkey = [], verbose = False):
         super(LoRaWANsend, self).__init__(verbose)
-        self.devaddr = devaddr
-        self.nwkey = nwkey
-        self.appkey = appkey
         
     def on_tx_done(self):
-        # 紀錄送出的時間
-        global TX_TIMESTAMP
-        TX_TIMESTAMP = datetime.datetime.now().timestamp()
         print("TxDone\n")
         # 切換到rx
         self.set_mode(MODE.STDBY)
@@ -34,6 +28,8 @@ class LoRaWANsend(LoRa):
         self.set_mode(MODE.RXSINGLE)
         
     def on_rx_done(self):
+        global RxDone
+        RxDone = any([self.get_irq_flags()[s] for s in ['rx_done']])
         print("RxDone")
         self.clear_irq_flags(RxDone=1)
         
@@ -52,7 +48,6 @@ class LoRaWANsend(LoRa):
             write_config()
         else:
             print("Wrong MIC")
-        sys.exit(0)
     
     def send(self):
         global fCnt
@@ -67,12 +62,15 @@ class LoRaWANsend(LoRa):
         self.set_mode(MODE.TX)
     
     def time_checking(self):
-        global TX_TIMESTAMP
-        diff = datetime.datetime.now().timestamp()-TX_TIMESTAMP
-        # 檢查上次傳uplink的時間差
-        if diff > 2 :
+        global RxDone
+        # 檢查是否超時
+        TIMEOUT = any([self.get_irq_flags()[s] for s in ['rx_timeout']])
+        if TIMEOUT:
             print("TIMEOUT!!")
             write_config()
+            sys.exit(0)
+        elif RxDone:
+            print("SUCCESS!!")
             sys.exit(0)
     
     def start(self):
@@ -105,7 +103,6 @@ def read_config():
     print("appskey: ",parsed_json['appskey'],"\n")
 
 # Init
-TX_TIMESTAMP = datetime.datetime.now().timestamp()
 fCnt = 0
 devaddr = []
 nwskey = []
